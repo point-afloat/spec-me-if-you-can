@@ -72,7 +72,7 @@ test("healthz and the page are served", async () => {
   const page = await fetch(`${base}/`);
   assert.equal(page.status, 200);
   assert.match(await page.text(), /<title>AI Bingo<\/title>/);
-  for (const asset of ["/app.js", "/stars.js", "/boot.js", "/style.css"]) {
+  for (const asset of ["/app.js", "/stars.js", "/boot.js", "/leaderboard.js", "/style.css"]) {
     assert.equal((await fetch(`${base}${asset}`)).status, 200, asset);
   }
   assert.equal((await fetch(`${base}/nope`)).status, 404);
@@ -256,7 +256,7 @@ test("a markup nickname is returned as inert text and the page never uses innerH
   assert.equal(((await res.json()) as Card).nickname, name, "stored verbatim, escaped only when rendered");
   assert.match(res.headers.get("content-type")!, /^application\/json/);
 
-  for (const script of ["/app.js", "/boot.js", "/stars.js"]) {
+  for (const script of ["/app.js", "/boot.js", "/stars.js", "/leaderboard.js"]) {
     const client = await (await fetch(`${base}${script}`)).text();
     assert.doesNotMatch(client, /innerHTML|outerHTML|insertAdjacentHTML|document\.write/, script);
   }

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { CELLS, CENTER, hasBingo, isMarked, isValidCell, toggle, wordIdAt } from "./card.ts";
 import { newPlayerState, sign, verify, type PlayerState } from "./cookie.ts";
+import { Leaderboard } from "./leaderboard.ts";
 import { displayName, validateNickname } from "./nickname.ts";
 import { WORDS } from "./words.ts";
 
@@ -18,6 +19,12 @@ export interface AppOptions {
   /** Interval of the SSE test stream events (default 5 s) and heartbeats (default 15 s). */
   pingIntervalMs?: number;
   heartbeatIntervalMs?: number;
+  /** Standings pushes are coalesced: at most one per this many ms (default 150). */
+  coalesceMs?: number;
+  /** Interval of the full standings snapshot that doubles as a keep-alive (default 10 s). */
+  snapshotIntervalMs?: number;
+  /** Maximum number of open event streams (default 2000). */
+  maxStreams?: number;
 }
 
 const STATIC_FILES: Record<string, { file: string; type: string }> = {
@@ -25,6 +32,7 @@ const STATIC_FILES: Record<string, { file: string; type: string }> = {
   "/app.js": { file: "app.js", type: "text/javascript; charset=utf-8" },
   "/stars.js": { file: "stars.js", type: "text/javascript; charset=utf-8" },
   "/boot.js": { file: "boot.js", type: "text/javascript; charset=utf-8" },
+  "/leaderboard.js": { file: "leaderboard.js", type: "text/javascript; charset=utf-8" },
   "/style.css": { file: "style.css", type: "text/css; charset=utf-8" },
 };
 const PUBLIC_DIR = new URL("../public/", import.meta.url);
@@ -107,6 +115,13 @@ export function createApp(options: AppOptions): http.Server {
   const secure = options.secureCookies ?? true;
   const pingMs = options.pingIntervalMs ?? 5000;
   const heartbeatMs = options.heartbeatIntervalMs ?? 15000;
+  const coalesceMs = options.coalesceMs ?? 150;
+  const snapshotMs = options.snapshotIntervalMs ?? 10000;
+  const maxStreams = options.maxStreams ?? 2000;
+
+  const leaderboard = new Leaderboard({ secret });
+  const streams = new Set<{ res: http.ServerResponse; viewerId: string | null }>();
+  let pushTimer: NodeJS.Timeout | null = null;
 
   function cookieHeader(state: PlayerState): string {
     const attrs = [
@@ -139,6 +154,71 @@ export function createApp(options: AppOptions): http.Server {
   function currentPlayer(req: http.IncomingMessage): PlayerState | null {
     return verify(parseCookies(req.headers.cookie)[COOKIE_NAME], secret);
   }
+
+  // ---------------------------------------------------------------- live standings
+
+  /** Send every open stream the current standings, each with its own "you" entry. */
+  function pushStandings(): void {
+    if (streams.size === 0) return;
+    const ranking = leaderboard.ranking();
+    const shared = ranking.snapshot(null);
+    const top = JSON.stringify(shared.top); // serialised once for all viewers
+    for (const stream of streams) {
+      const you = JSON.stringify(ranking.snapshot(stream.viewerId).you);
+      stream.res.write(`event: standings\ndata: {"top":${top},"total":${shared.total},"you":${you}}\n\n`);
+    }
+  }
+
+  /** Coalesce bursts of changes into at most one push per coalesceMs. */
+  function schedulePush(): void {
+    if (pushTimer) return;
+    pushTimer = setTimeout(() => {
+      pushTimer = null;
+      pushStandings();
+    }, coalesceMs);
+    pushTimer.unref();
+  }
+
+  /** Run a store update and schedule a push if it changed anything visible. */
+  function updated<T>(run: () => T): T {
+    const before = leaderboard.version;
+    const result = run();
+    if (leaderboard.version !== before) schedulePush();
+    return result;
+  }
+
+  /** Silently register the viewer from a verified cookie. Returns their public id, or null. */
+  function registerViewer(state: PlayerState | null): string | null {
+    return state ? updated(() => leaderboard.register(state)) : null;
+  }
+
+  function broadcastBingo(id: string, name: string, place: number): void {
+    const frame = `event: bingo\ndata: ${JSON.stringify({ id, name, place })}\n\n`;
+    for (const stream of streams) stream.res.write(frame);
+  }
+
+  function handleEvents(req: http.IncomingMessage, res: http.ServerResponse): void {
+    if (streams.size >= maxStreams) throw new HttpError(503, "too many open streams");
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+      ...SECURITY_HEADERS,
+    });
+    res.write("retry: 3000\n\n");
+    const stream = { res, viewerId: registerViewer(currentPlayer(req)) };
+    streams.add(stream);
+    res.write(`event: standings\ndata: ${JSON.stringify(leaderboard.snapshot(stream.viewerId))}\n\n`);
+    req.on("close", () => streams.delete(stream));
+  }
+
+  const keepAlive = setInterval(() => {
+    for (const stream of streams) stream.res.write(": ping\n\n");
+  }, heartbeatMs);
+  const snapshots = setInterval(pushStandings, snapshotMs);
+  keepAlive.unref();
+  snapshots.unref();
 
   function handlePingStream(req: http.IncomingMessage, res: http.ServerResponse): void {
     res.writeHead(200, {
@@ -184,6 +264,16 @@ export function createApp(options: AppOptions): http.Server {
         handlePingStream(req, res);
         return;
 
+      case "/api/standings": {
+        if (method !== "GET") throw new HttpError(405, "method not allowed");
+        return sendJson(res, 200, leaderboard.snapshot(registerViewer(currentPlayer(req))));
+      }
+
+      case "/api/events":
+        if (method !== "GET") throw new HttpError(405, "method not allowed");
+        handleEvents(req, res);
+        return;
+
       case "/api/card": {
         if (method !== "GET") throw new HttpError(405, "method not allowed");
         const existing = currentPlayer(req);
@@ -199,10 +289,16 @@ export function createApp(options: AppOptions): http.Server {
         if (!state) throw new HttpError(401, "no valid card cookie");
         const cell = body?.cell;
         if (!isValidCell(cell)) throw new HttpError(400, "cell must be an integer from 0 to 24");
+        const id = updated(() => leaderboard.register(state)); // the state from before this mark
         const mask = toggle(state.mask, cell);
         const bingo = hasBingo(mask);
         const newBingo = bingo && !state.announced;
         const next: PlayerState = { ...state, mask, announced: state.announced || bingo };
+        // The room is told only if the store agrees this is the player's first bingo; the
+        // cookie flag alone would let a replayed older cookie announce again.
+        const place = newBingo ? updated(() => leaderboard.recordBingo(id)) : null;
+        updated(() => leaderboard.register(next));
+        if (place !== null) broadcastBingo(id, displayName(next.nickname, next.playerId), place);
         return sendJson(res, 200, { ...view(next), newBingo }, next);
       }
 
@@ -216,6 +312,7 @@ export function createApp(options: AppOptions): http.Server {
           throw new HttpError(400, "nickname must be 1-20 characters without control characters");
         }
         const next: PlayerState = { ...state, nickname };
+        updated(() => leaderboard.register(next));
         return sendJson(res, 200, view(next), next);
       }
     }
@@ -223,7 +320,7 @@ export function createApp(options: AppOptions): http.Server {
     throw new HttpError(404, "not found");
   }
 
-  return http.createServer((req, res) => {
+  const server = http.createServer((req, res) => {
     route(req, res).catch((err: unknown) => {
       if (res.headersSent) {
         res.destroy();
@@ -234,6 +331,12 @@ export function createApp(options: AppOptions): http.Server {
       sendJson(res, status, { error: err instanceof HttpError ? err.message : "internal error" });
     });
   });
+  server.on("close", () => {
+    clearInterval(keepAlive);
+    clearInterval(snapshots);
+    if (pushTimer) clearTimeout(pushTimer);
+  });
+  return server;
 }
 
 function main(): void {

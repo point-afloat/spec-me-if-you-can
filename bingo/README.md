@@ -66,6 +66,40 @@ Pushing to the configured branch redeploys the app. In the Sliplane admin panel:
 - `GET /api/card` create or restore the card
 - `POST /api/mark` `{"cell": 0-24}` toggle a cell
 - `POST /api/nickname` `{"nickname": "..."}` set the nickname
+- `GET /api/standings` the live leaderboard as JSON (see below)
+- `GET /api/events` the same standings as a server-sent-events stream, plus bingo announcements
 - `GET /healthz` health check
 - `GET /api/ping-stream` server-sent-events test stream (an event every 5 s, a heartbeat every 15 s), used to check that the hosting proxy passes long-lived streams:
   `curl -N http://localhost:3000/api/ping-stream`
+
+## Leaderboard (v2)
+
+Players are ranked by ticked words (the pizza does not count); a tie goes to whoever reached the score first. Scores and names come only from the player's signed cookie, never from the client.
+
+`GET /api/standings` returns the current snapshot. It silently registers the caller if their cookie is valid (a request without a valid cookie only reads):
+
+```json
+{
+  "top": [{ "id": "a1b2c3d4e5f6", "name": "Ada", "score": 7, "badge": false }],
+  "total": 42,
+  "you": { "id": "a1b2c3d4e5f6", "name": "Ada", "score": 7, "badge": false, "rank": 1 }
+}
+```
+
+`top` has at most 10 entries, `total` counts all players, `you` is the caller's own entry (or `null` without a valid cookie), and `badge` means the player has had a bingo; the page then shows their name in a highlighted style with the caption "AGI ACHIEVED" under it.
+
+`GET /api/events` is a server-sent-events stream. It sends:
+
+- `event: standings`: the snapshot above, immediately on connect, after every change (at most one push per 150 ms), and every 10 s as a keep-alive;
+- `event: bingo`: `{ "id", "name", "place" }`, when a player gets their first bingo (once per player; `place` counts first bingos since the server started);
+- `: ping` comment lines every 15 s.
+
+Try it (use `-c`/`-b` so the same cookie, and therefore the same player, is used):
+
+```sh
+curl -s -c jar http://localhost:3000/api/card > /dev/null
+curl -s -b jar http://localhost:3000/api/standings
+curl -sN -b jar --max-time 30 http://localhost:3000/api/events
+```
+
+Standings live in memory only. After a restart or redeploy they are empty and refill within seconds as open pages reconnect with their existing cookie. Reconnecting never triggers a bingo announcement, players who already had a bingo keep their badge, and the placement counter starts again at 1.

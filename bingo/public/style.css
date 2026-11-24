@@ -566,6 +566,151 @@ html.booting body {
 }
 
 
+/* ---------- leaderboard pane (below the card) ---------- */
+.board {
+  position: relative;
+  margin: 1.1rem 0.5rem 0.4rem;
+  padding: 0.9rem 0.5rem 0.5rem;
+  border: 1px solid rgba(94, 234, 212, 0.38);
+  border-radius: 0.25rem;
+  background: rgba(2, 4, 14, 0.6);
+  box-shadow: 0 0 34px rgba(94, 234, 212, 0.08), inset 0 0 40px rgba(94, 234, 212, 0.03);
+  font-family: var(--mono);
+}
+.board::before {
+  content: "┤ leaderboard.log ├";
+  position: absolute;
+  top: -0.62rem;
+  left: 0.8rem;
+  padding: 0 0.3rem;
+  background: #050819;
+  font: 0.62rem/1 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--teal);
+}
+.lb {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lb li {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr) 2.4rem 5.6rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.22rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.72rem;
+  color: #aebbe0;
+}
+.lb .r {
+  color: var(--muted);
+}
+.lb .n {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.05rem;
+  color: var(--text);
+}
+.lb .nm {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* a player who has had a bingo: shimmering gradient name, glow, and the "AGI ACHIEVED" caption */
+.lb li.win .nm {
+  font-weight: 700;
+  background: linear-gradient(110deg, #fff, #9ec5ff 30%, var(--violet) 55%, var(--teal) 80%, #fff);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgba(110, 168, 255, 0.55));
+  animation: shimmer 7s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: 220% center;
+  }
+}
+.lb .tag {
+  font-size: 0.5rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  color: var(--teal);
+  text-shadow: 0 0 8px rgba(94, 234, 212, 0.7);
+}
+.lb .b {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(150, 190, 255, 0.14);
+  overflow: hidden;
+}
+.lb .b i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--teal));
+}
+.lb .s {
+  text-align: right;
+  color: var(--ice);
+  white-space: nowrap;
+}
+.lb li.me {
+  background: rgba(94, 234, 212, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(94, 234, 212, 0.35);
+}
+.lb li.gap {
+  display: block;
+  padding: 0.1rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+.lb-total {
+  margin: 0.45rem 0.35rem 0;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+/* ---------- bingo toasts: one line each, click-through, never over the card on a phone ---------- */
+.toasts {
+  position: fixed;
+  right: 0.6rem;
+  bottom: 0.5rem;
+  left: 0.6rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  margin: 0;
+  max-width: 100%;
+  padding: 0.3rem 0.7rem;
+  overflow: hidden;
+  border: 1px solid rgba(94, 234, 212, 0.55);
+  border-radius: 0.4rem;
+  background: rgba(3, 6, 18, 0.92);
+  box-shadow: 0 0 18px rgba(94, 234, 212, 0.3);
+  color: var(--teal);
+  font-size: 0.74rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  animation: toast-in 0.25s ease both;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* faint CRT scanlines over the whole window (same as the boot screen) */
 .window::after {
   content: "";
