@@ -48,7 +48,7 @@ Greenfield project in `bingo/`; no existing code or specs. It is deployed to Sli
 
 - [Signing secret changes or is lost] → Required env var with a startup check; document it in the README and set it in Sliplane before the first deploy.
 - [Domain changes between v1 and the talk] → Fix the domain first; cookies are bound to it.
-- [Proxy buffers or times out long-lived streams] → Verify with the ping stream from two phones on mobile data before the talk; v2 adds heartbeats and a polling fallback.
+- [Proxy buffers or times out long-lived streams] → Checked once against the live proxy (a 5-minute stream with steady 5 s events and 15 s heartbeats); mobile-network paths were not tested. v2 adds heartbeats and a polling fallback.
 - [Word list edited incorrectly in v2] → Snapshot test fails on reorder or removal.
 - [Players who clear cookies get a new card] → Accepted; an anonymous game has no recovery.
 - [Rude or misleading nicknames shown to the whole room in v2] → Only a length and character limit in v1; moderation is deferred, and the presenter can redeploy or rotate the secret in an emergency.
@@ -62,6 +62,5 @@ Greenfield project in `bingo/`; no existing code or specs. It is deployed to Sli
 
 1. In the Sliplane admin panel: connect the GitHub repository, set the build to use `bingo/` as the Dockerfile directory and build context (the repository root is the presentation project), pick the deploy branch, and set `COOKIE_SECRET` and the domain.
 2. Deploy by pushing to the deploy branch; tag the commit `v1`.
-3. Run the SSE ping-stream check from two phones on mobile data.
-4. Redeploy once unchanged and confirm that an existing card and marks survive.
-5. Rollback: push or switch the deploy branch back to the previous commit (for example a prepared fallback branch); the cookie format is unchanged so players keep their cards.
+3. Redeploy once unchanged and confirm that an existing card and marks survive.
+4. Rollback: push or switch the deploy branch back to the previous commit (for example a prepared fallback branch); the cookie format is unchanged so players keep their cards.

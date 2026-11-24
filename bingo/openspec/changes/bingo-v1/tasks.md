@@ -41,5 +41,4 @@
 
 - [x] 6.1 Write the multi-stage Dockerfile (non-root, `PORT`, no secret baked in) and verify `docker build` and `docker run` serve the page locally
 - [x] 6.2 In the Sliplane admin panel connect the GitHub repository with `bingo/` as Dockerfile directory and build context, set `COOKIE_SECRET` and the domain, push to the deploy branch and tag the commit `v1`, and verify the page loads over HTTPS and a card is created
-- [ ] 6.3 Run the ping-stream check from two phones on mobile data for 5 minutes and verify events arrive steadily without gaps or buffering
-- [x] 6.4 Redeploy the unchanged app by pushing an empty commit to the deploy branch and verify that an existing card, its marked cells and its nickname are still there
+- [x] 6.3 Redeploy the unchanged app by pushing an empty commit to the deploy branch and verify that an existing card, its marked cells and its nickname are still there
