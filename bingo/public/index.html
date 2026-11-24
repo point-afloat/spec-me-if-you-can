@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#03040a" />
+    <title>AI Bingo</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/boot.js"></script>
+  </head>
+  <body>
+    <div class="nebula" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="horizon" aria-hidden="true"></div>
+
+    <main>
+      <div class="window">
+        <div class="titlebar mono" aria-hidden="true">
+          <span class="lights"><i></i><i></i><i></i></span>
+          <span class="wtitle">kitty &mdash; root@universe:~/agi</span>
+          <span class="lights ghost"><i></i><i></i><i></i></span>
+        </div>
+
+        <div class="status mono">
+          <h1 class="seg seg-a">Artificial General Bingo</h1>
+          <p id="who" class="seg seg-b"></p>
+          <p id="stats" class="seg seg-c"></p>
+        </div>
+        <div class="agi" role="progressbar" aria-label="AGI progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <i id="agi-bar"></i>
+        </div>
+
+        <form id="nickname-form" autocomplete="off">
+          <label for="nickname" class="mono prompt">$ whoami</label>
+          <input id="nickname" name="nickname" maxlength="40" placeholder="anon" spellcheck="false" />
+          <button type="submit">sudo deploy</button>
+          <p id="nickname-hint" class="hint mono" role="status"></p>
+        </form>
+
+        <div id="bingo-banner" class="banner" role="status" hidden>
+          <span>🚀 AGI ACHIEVED</span>
+          <small>bingo &middot; alignment pending &middot; you 10x'd the room</small>
+        </div>
+
+        <div id="grid" class="grid" aria-label="Bingo card"></div>
+        <p id="error" class="error mono" role="alert" hidden></p>
+
+        <div class="statusline mono" aria-hidden="true">
+          <span class="mode">NORMAL</span>
+          <span class="branch">main</span>
+          <span class="grow">no GPUs were harmed</span>
+          <span>utf-8</span>
+          <span>0xDEADBEEF</span>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="/stars.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

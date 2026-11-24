@@ -1,0 +1,577 @@
+:root {
+  color-scheme: dark;
+  --bg: #03040a;
+  --glass: rgba(14, 20, 48, 0.5);
+  --glass-hi: rgba(40, 56, 120, 0.45);
+  --line: rgba(150, 190, 255, 0.17);
+  --text: #eef3ff;
+  --muted: #8d9bc4;
+  --ice: #d6e8ff;
+  --blue: #6ea8ff;
+  --indigo: #6366f1;
+  --violet: #a78bfa;
+  --teal: #5eead4;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #111c44 0%, #070a1c 45%, var(--bg) 100%) fixed;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+/* ---------- space ---------- */
+#stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.nebula {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  filter: blur(90px);
+}
+.nebula i {
+  position: absolute;
+  width: 50vmax;
+  height: 50vmax;
+  border-radius: 50%;
+  opacity: 0.32;
+  animation: drift 40s ease-in-out infinite alternate;
+}
+.nebula i:nth-child(1) {
+  background: var(--indigo);
+  top: -22vmax;
+  left: -16vmax;
+}
+.nebula i:nth-child(2) {
+  background: #0e7490;
+  top: 18vmax;
+  right: -28vmax;
+  opacity: 0.22;
+  animation-duration: 55s;
+}
+.nebula i:nth-child(3) {
+  background: #7c3aed;
+  bottom: -30vmax;
+  left: -4vmax;
+  opacity: 0.22;
+  animation-duration: 65s;
+}
+
+@keyframes drift {
+  to {
+    transform: translate(5vmax, 3vmax) scale(1.12);
+  }
+}
+
+/* the limb of a planet at the bottom of the screen */
+.horizon {
+  position: fixed;
+  z-index: 0;
+  left: 50%;
+  bottom: calc(-170vmax + 9vh);
+  width: 170vmax;
+  height: 170vmax;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, #0a1230 0%, #04060f 14%, var(--bg) 40%);
+  box-shadow:
+    0 -1px 0 rgba(190, 220, 255, 0.7),
+    0 -6px 30px rgba(110, 168, 255, 0.45),
+    0 -30px 90px rgba(99, 102, 241, 0.3);
+}
+
+/* ---------- the card: a TUI pane ---------- */
+.grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 1.1rem 0.5rem 0.2rem;
+  border: 1px solid rgba(94, 234, 212, 0.38);
+  border-radius: 0.25rem;
+  background: rgba(2, 4, 14, 0.6);
+  box-shadow: 0 0 34px rgba(94, 234, 212, 0.08), inset 0 0 40px rgba(94, 234, 212, 0.03);
+}
+.grid::before {
+  content: "┤ bingo.tsv ├";
+  position: absolute;
+  top: -0.62rem;
+  left: 0.8rem;
+  z-index: 1;
+  padding: 0 0.3rem;
+  background: #050819;
+  font: 0.62rem/1 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--teal);
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 0.85rem 0.2rem 0.2rem;
+  border: 0;
+  border-right: 1px solid rgba(94, 234, 212, 0.14);
+  border-bottom: 1px solid rgba(94, 234, 212, 0.14);
+  border-radius: 0;
+  background: transparent;
+  color: #aebbe0;
+  font: 500 clamp(0.47rem, 1.95vw, 0.74rem) / 1.25 var(--mono);
+  text-align: center;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  animation: cell-in 0.3s both;
+}
+.cell:nth-child(5n) {
+  border-right: 0;
+}
+.cell:nth-child(n + 21) {
+  border-bottom: 0;
+}
+
+/* checkbox marker in the corner of every cell */
+.cell::before {
+  content: "[ ]";
+  position: absolute;
+  top: 0.22rem;
+  left: 0.3rem;
+  font-size: 0.5rem;
+  line-height: 1;
+  letter-spacing: 0;
+  color: rgba(150, 190, 255, 0.45);
+}
+
+.cell:hover {
+  background: rgba(94, 234, 212, 0.07);
+  color: #fff;
+}
+.cell:focus-visible {
+  outline: 1px solid var(--teal);
+  outline-offset: -3px;
+}
+
+/* a marked cell is the selected line: teal text, soft glow */
+.cell.marked {
+  color: var(--teal);
+  background: rgba(94, 234, 212, 0.09);
+  text-shadow: 0 0 12px rgba(94, 234, 212, 0.6);
+  box-shadow: inset 0 0 22px rgba(94, 234, 212, 0.13);
+}
+.cell.marked::before {
+  content: "[x]";
+  color: var(--teal);
+  text-shadow: none;
+}
+
+/* the free cell: pizza, always checked */
+.cell.free {
+  font-size: clamp(1.4rem, 8vw, 2rem);
+  cursor: default;
+  color: #fff;
+  background: radial-gradient(circle at 50% 55%, rgba(167, 139, 250, 0.22), transparent 70%);
+}
+.cell.free::before {
+  content: "[*]";
+  color: var(--violet);
+}
+.cell.free::after {
+  content: "free()";
+  position: absolute;
+  bottom: 0.22rem;
+  font-size: 0.5rem;
+  line-height: 1;
+  color: var(--violet);
+  text-shadow: none;
+}
+.cell.free:hover {
+  background: radial-gradient(circle at 50% 55%, rgba(167, 139, 250, 0.22), transparent 70%);
+}
+
+/* first render only ("rendering card"): cells fade in one after another */
+@keyframes cell-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.error {
+  color: #fda4af;
+  font-size: 0.8rem;
+}
+
+#confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- terminal window ---------- */
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 0.6rem 0.5rem 1.5rem;
+}
+
+.window {
+  position: relative;
+  border: 1px solid rgba(94, 234, 212, 0.28);
+  border-radius: 0.8rem;
+  background: rgba(4, 7, 20, 0.74);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(94, 234, 212, 0.07);
+  overflow: hidden;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(150, 190, 255, 0.04);
+  font-size: 0.66rem;
+  color: var(--muted);
+}
+.lights {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+.lights i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #ff6b6b;
+  opacity: 0.85;
+}
+.lights i:nth-child(2) {
+  background: #fbbf24;
+}
+.lights i:nth-child(3) {
+  background: #4ade80;
+}
+.lights.ghost {
+  visibility: hidden;
+}
+.wtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* powerline-style status segments */
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  padding: 0.55rem 0.5rem 0.4rem;
+  font-size: 0.7rem;
+}
+.status > * {
+  margin: 0;
+}
+.seg {
+  padding: 0.28rem 1.1rem 0.28rem 0.7rem;
+  clip-path: polygon(0 0, calc(100% - 0.55rem) 0, 100% 50%, calc(100% - 0.55rem) 100%, 0 100%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.seg-a {
+  background: var(--teal);
+  color: #04120f;
+  text-transform: uppercase;
+}
+.seg-b {
+  background: var(--blue);
+  color: #04061a;
+}
+.seg-b:empty,
+.seg-c:empty {
+  display: none;
+}
+.seg-c {
+  background: var(--violet);
+  color: #0b0620;
+}
+
+.agi {
+  height: 2px;
+  margin: 0 0.6rem 0.5rem;
+  border-radius: 2px;
+  background: rgba(150, 190, 255, 0.14);
+  overflow: hidden;
+}
+.agi i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--teal));
+  box-shadow: 0 0 10px var(--teal);
+}
+
+/* ---------- name prompt ---------- */
+#nickname-form {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0 0.5rem 0.5rem;
+  padding: 0.3rem 0.4rem 0.3rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.25);
+}
+.prompt {
+  color: var(--teal);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+#nickname-form input {
+  min-width: 0;
+  padding: 0.3rem 0.1rem;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: 0.85rem var(--mono);
+  caret-color: var(--teal);
+}
+#nickname-form input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+#nickname-form input:focus {
+  outline: none;
+}
+#nickname-form:focus-within {
+  border-color: rgba(94, 234, 212, 0.5);
+}
+button {
+  font: inherit;
+  color: var(--text);
+}
+#nickname-form button {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid rgba(94, 234, 212, 0.5);
+  border-radius: 0.4rem;
+  background: rgba(94, 234, 212, 0.1);
+  color: var(--teal);
+  font: 700 0.75rem var(--mono);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+#nickname-form button:hover {
+  background: rgba(94, 234, 212, 0.22);
+}
+.hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--teal);
+}
+.hint:empty {
+  display: none;
+}
+
+/* ---------- bingo banner ---------- */
+.banner {
+  margin: 0 0.5rem 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  color: #04061a;
+  background: linear-gradient(110deg, #fff, #9ec5ff, var(--violet), var(--teal));
+  box-shadow: 0 0 30px rgba(110, 168, 255, 0.4);
+}
+.banner[hidden] {
+  display: none;
+}
+.banner span {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+.banner small {
+  font: 0.62rem var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.error {
+  margin: 0.5rem;
+}
+
+/* vim-style status line */
+.statusline {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  margin-top: 0.55rem;
+  border-top: 1px solid var(--line);
+  background: rgba(150, 190, 255, 0.05);
+  font-size: 0.64rem;
+  color: var(--muted);
+}
+.statusline span {
+  padding: 0.28rem 0;
+}
+.statusline .mode {
+  padding: 0.28rem 0.7rem;
+  background: var(--blue);
+  color: #04061a;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.statusline .branch {
+  color: var(--teal);
+}
+.statusline .grow {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.statusline span:last-child {
+  padding-right: 0.7rem;
+}
+
+/* ---------- first-visit boot sequence ---------- */
+html.booting body > :not(.boot) {
+  visibility: hidden;
+}
+html.booting body {
+  background: #02030a;
+  overflow: hidden;
+}
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.2rem max(1.2rem, calc((100vw - 48rem) / 2));
+  overflow: hidden;
+  background: #02030a;
+  font-family: var(--mono);
+  transition: opacity 0.5s ease;
+  cursor: pointer;
+}
+.boot::after {
+  /* faint CRT scanlines */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px);
+}
+.boot.out {
+  opacity: 0;
+  pointer-events: none;
+}
+.boot-art {
+  margin: 0;
+  min-height: 6em;
+  font: 700 min(3.3vw, 2rem) / 1 var(--mono);
+  white-space: pre;
+  background: linear-gradient(100deg, var(--teal), var(--blue) 50%, var(--violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgba(94, 234, 212, 0.45));
+}
+.boot-title {
+  margin: 0;
+  font-size: clamp(0.8rem, 3.4vw, 1.1rem);
+  letter-spacing: 0.35em;
+  color: var(--ice);
+  opacity: 0;
+}
+.boot-title.on {
+  opacity: 1;
+}
+.boot-log p {
+  margin: 0;
+  font-size: clamp(0.62rem, 2.5vw, 0.8rem);
+  line-height: 1.7;
+  color: var(--muted);
+}
+.boot-log .ok {
+  color: var(--text);
+}
+.boot-log .warn {
+  color: #fbbf24;
+}
+.boot-log .hi {
+  margin-top: 0.4rem;
+  color: var(--teal);
+}
+.boot-hint {
+  position: absolute;
+  bottom: 1rem;
+  left: max(1.2rem, calc((100vw - 48rem) / 2));
+  margin: 0;
+  font-size: 0.65rem;
+  color: var(--muted);
+  opacity: 0.7;
+}
+.boot-hint::after {
+  content: "_";
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+
+/* faint CRT scanlines over the whole window (same as the boot screen) */
+.window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+}
