@@ -1,0 +1,81 @@
+<section>
+  <h1 class="r-fit-text">OpenSpec</h1>
+  <aside class="notes">
+    One implementation of the idea (https://github.com/Fission-AI/openspec). Others exist.
+    Commands shown are the OpenSpec 1.x /opsx:* commands (explore, propose, apply, update, sync, archive). In OpenSpec 2.0 they
+    became skills (/openspec-propose, /openspec-apply-change, ...): check which ones the demo repo uses before the talk.
+    /opsx:verify is in the expanded profile only.
+  </aside>
+</section>
+<section>
+  <p class="r-fit-text">A spec says what the software<br />should do, not how.</p>
+  <aside class="notes">
+    General definition: a precise description of what a system must do, independent of the implementation,
+    written so that one party can build it and another can check it. Contracts, API specs and standards work this way.
+    The how is the code (in OpenSpec also design.md).
+    Böckeler distinguishes spec-first, spec-anchored and spec-as-source; by her definitions OpenSpec fits spec-anchored (my reading: her article covers Kiro, spec-kit and Tessl, not OpenSpec):
+    https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html
+    Q&A, if asked whether every task needs a spec: no. Throwaway scripts and exploration do not.
+    Match the ceremony to the stakes, and prototype first when you don't know yet what you want.
+  </aside>
+</section>
+<section>
+  <p class="r-fit-text">
+    Written down.
+    <span class="fragment">Checkable.</span>
+    <span class="fragment">Kept.</span>
+  </p>
+  <aside class="notes">
+    The three properties answer the three problems from the vibe-coding chapter:
+    intent only in the chat -> written down, in the repo;
+    nothing to check against -> checkable: scenarios become tests;
+    nothing protects what works -> kept: living specs plus tests protect existing behavior.
+  </aside>
+</section>
+<section>
+  <p class="r-fit-text">
+    Explore <span class="fragment">&rarr; Propose</span>
+    <span class="fragment">&rarr; Apply</span>
+    <span class="fragment">&rarr; Archive</span>
+  </p>
+  <aside class="notes">
+    The loop is enough, no command list. Verify is optional. Do not explain this again in the demo.
+    A change folder holds proposal.md, specs/ (the deltas), design.md and tasks.md. One intent per change,
+    explore before proposing.
+  </aside>
+</section>
+<section>
+  <p class="r-fit-text">
+    Propose writes it down.<br />
+    <span class="fragment">Apply checks it.</span><br />
+    <span class="fragment">Archive keeps it.</span>
+  </p>
+  <aside class="notes">
+    Maps the three properties to the loop. Propose creates the change with the spec deltas. Apply builds against it,
+    with tests as the check. Archive merges the deltas (ADDED / MODIFIED / REMOVED Requirements) into the living
+    specs in openspec/specs/. That merge separates OpenSpec from "write a doc first".
+  </aside>
+</section>
+<section>
+  <pre><code class="language-markdown" data-trim data-noescape>
+## ADDED Requirements
+
+### Requirement: Ranked standings
+The system SHALL rank players by marked words,
+highest first.
+
+#### Scenario: Higher score ranks first
+- **GIVEN** A has 5 marked words and B has 3
+- **WHEN** the standings are shown
+- **THEN** A is ranked above B
+
+#### Scenario: Pizza does not count
+- **WHEN** only the pizza center is marked
+- **THEN** the score is 0
+  </code></pre>
+  <aside class="notes">
+    Here is one. Shortened from the real leaderboard-v2 spec of the bingo. A delta header, one requirement with
+    one SHALL, scenarios in GIVEN / WHEN / THEN, and an edge case, not only the happy path.
+    Behavior goes in the spec, the how goes in design.md. The real files are shown live in the demo.
+  </aside>
+</section>

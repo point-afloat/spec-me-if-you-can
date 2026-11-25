@@ -1,0 +1,401 @@
+/* ==========================================================================
+   Design tokens: tweak the look here.
+   Minimal dark "tech talk" style: calm background, big sans type, one accent.
+   ========================================================================== */
+:root {
+  /* colours */
+  --bg: #121316;            /* slide background: near-black, slightly cool */
+  --fg: #f5f6f8;            /* main text, ~17:1 contrast on --bg */
+  --fg-muted: #aeb4bf;      /* secondary text (hints, slide number), ~8:1 */
+  --accent: #7cc4ff;        /* the one accent: emphasis, attribution, result */
+  --accent-soft: #4a9edb;   /* hover / pressed states */
+
+  /* fonts: system stacks only, works offline */
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", "Noto Sans", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, Menlo,
+    Consolas, "Liberation Mono", monospace;
+
+  /* type */
+  --weight-body: 500;
+  --weight-heading: 700;
+  --tracking-tight: -0.02em;
+  --line-height: 1.25;
+  --attribution-size: 0.75em;
+
+  /* motion */
+  --fragment-speed: 0.45s;
+
+  /* reveal.js / Dracula theme variables, mapped to the tokens above */
+  --r-background-color: var(--bg);
+  --r-main-font: var(--font-sans);
+  --r-heading-font: var(--font-sans);
+  --r-code-font: var(--font-mono);
+  --r-main-color: var(--fg);
+  --r-heading-color: var(--fg);
+  --r-heading-font-weight: var(--weight-heading);
+  --r-heading-letter-spacing: var(--tracking-tight);
+  --r-heading-line-height: 1.1;
+  --r-heading1-size: 2.8em;
+  --r-link-color: var(--accent);
+  --r-link-color-hover: var(--fg);
+  --r-bold-color: var(--accent);
+  --r-italic-color: var(--fg);
+  --r-inline-code-color: var(--accent);
+  --r-list-bullet-color: var(--accent);
+  --r-selection-background-color: var(--accent);
+  --r-selection-color: var(--bg);
+}
+
+.reveal {
+  font-weight: var(--weight-body);
+  -webkit-font-smoothing: antialiased;
+}
+.reveal .slides section,
+.reveal .slides section > section {
+  line-height: var(--line-height);
+}
+.reveal p {
+  letter-spacing: var(--tracking-tight);
+}
+.reveal strong,
+.reveal b {
+  font-weight: var(--weight-heading);
+}
+
+/* fragments: a calm, slightly slower fade */
+.reveal .fragment {
+  transition-duration: var(--fragment-speed);
+}
+
+/* attribution under a quote ("- Matt Pocock"): quiet, accent coloured */
+.reveal .slides section div > p:not(.r-fit-text) {
+  margin-top: 1.2em;
+  font-size: var(--attribution-size);
+  font-weight: var(--weight-body);
+  color: var(--accent);
+}
+.reveal .slides section div > p:not(.r-fit-text) small {
+  font-size: 1em;
+  vertical-align: baseline;
+}
+
+/* navigation chrome: present but quiet */
+.reveal .controls {
+  color: var(--fg-muted);
+  opacity: 0.45;
+}
+.reveal .controls button:hover {
+  opacity: 1;
+}
+.reveal .slide-number {
+  background: none;
+  color: var(--fg-muted);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  left: 24px;
+  right: auto;
+  bottom: 18px;
+}
+
+/*Tying Effect */
+/* the title: no longer a flex row */
+.typing {
+  --speed: 0.08s; /* time per character */
+  display: block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: min(1em, calc(880px / (var(--chars) * 0.6)));
+  border-right: 0.08em solid transparent; /* cursor, invisible until typing */
+}
+
+/* Reveal adds .visible when the fragment is shown: that starts the typing */
+.typing.visible {
+  animation:
+    typing calc(var(--chars) * var(--speed)) steps(var(--chars)) forwards,
+    blink 0.7s step-end infinite;
+}
+
+/* a line whose next line has started loses its cursor */
+.typing:has(+ .typing.visible) {
+  border-right-width: 0;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: calc(var(--chars) * 1ch);
+  }
+}
+
+@keyframes blink {
+  from {
+    border-right-color: currentColor;
+  }
+  50% {
+    border-right-color: transparent;
+  }
+}
+/* Amdahls law */
+.reveal .eq {
+  display: flex;
+  align-items: baseline; /* result sits on the formula's baseline, level with the = sign */
+  justify-content: center;
+  gap: 0.35em;
+  font-size: 1.5em;
+}
+.reveal .eq strong {
+  color: var(--accent);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.reveal .amdahl-controls {
+  display: flex;
+  justify-content: center;
+  gap: 3em;
+  margin-top: 1.5em;
+  font-size: 0.6em;
+}
+.reveal .amdahl-controls label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+}
+.reveal .amdahl-controls input {
+  width: 12em;
+  accent-color: var(--accent);
+}
+.reveal .amdahl-controls .hint {
+  font-size: 0.85em;
+  color: var(--fg-muted);
+}
+
+/* Grieve */
+.reveal .grieve-wrap {
+  position: relative;
+  height: 650px; /* ~ default slide height of 700; adjust if you changed it */
+  aspect-ratio: 1280 / 1074; /* the image's proportions */
+  margin: 0 auto;
+  background: #fff; /* the PNG is transparent, so it needs a light backing */
+  border-radius: 12px;
+}
+
+.reveal .grieve-wrap img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+
+/* "Make it so" -> the line strikes out "so", then "Engineering" arrives */
+
+.reveal .build {
+  /* "Engineering" is invisible at first but still takes up space, so shift the line
+     to the right by half of its width: "Make it so" starts centred.
+     About 3em in a bold sans; tune it if the start looks off-centre. */
+  transform: translateX(3em);
+  transition: transform 0.6s ease 0.5s;
+}
+.reveal .build:has(.engineering.visible) {
+  transform: none;
+}
+
+/* the struck word */
+.reveal .build .so {
+  position: relative;
+  display: inline-block;
+  transition: opacity 0.4s ease 0.3s;
+}
+.reveal .build .so:has(.line.visible) {
+  opacity: 0.5;
+}
+
+/* the line draws itself from left to right */
+.reveal .build .so .line.fragment {
+  --line-y: 57%;                    /* vertical position of the line; tune by eye */
+  position: absolute;
+  left: -3%;
+  top: var(--line-y);
+  width: 106%;
+  height: 0.08em;
+  background: currentColor;
+  opacity: 1;                       /* undo the default fragment hiding; the scale hides it instead */
+  visibility: visible;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s ease;
+}
+.reveal .build .so .line.fragment.visible {
+  transform: scaleX(1);
+}
+
+/* "Engineering" fades in a beat after the line has been drawn */
+.reveal .build .engineering {
+  display: inline-block;            /* needed for the slide-in transform */
+  transform: translateX(-0.3em);
+  transition: opacity 0.5s ease 0.5s, transform 0.5s ease 0.5s;
+}
+.reveal .build .engineering.visible {
+  transform: none;
+}
+.reveal .build .engineering {
+  color: var(--accent);
+}
+
+/* Code snippets: Catppuccin Mocha */
+.reveal pre {
+  background: #1e1e2e; /* base */
+  border-radius: 12px;
+  border: 1px solid #313244; /* surface0: a hairline frame instead of a shadow */
+  box-shadow: none;
+}
+.reveal pre code {
+  background: none;
+  color: #cdd6f4; /* text */
+  padding: 0.8em 1em;
+}
+.reveal pre code .hljs-section {
+  color: #cba6f7; /* mauve: headings */
+  font-weight: bold;
+}
+.reveal pre code .hljs-strong {
+  color: #fab387; /* peach: GIVEN / WHEN / THEN */
+  font-weight: bold;
+}
+.reveal pre code .hljs-bullet {
+  color: #94e2d5; /* teal */
+}
+.reveal pre code .hljs-emphasis {
+  color: #f9e2af; /* yellow */
+}
+.reveal pre code .hljs-code {
+  color: #a6e3a1; /* green */
+}
+.reveal pre code .hljs-quote,
+.reveal pre code .hljs-comment {
+  color: #6c7086; /* overlay0 */
+}
+.reveal pre code .hljs-link {
+  color: #89b4fa; /* blue */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .fragment,
+  .reveal .build,
+  .reveal .build .so,
+  .reveal .build .engineering {
+    transition-duration: 0.01s !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* The Karpathy quote has an animated futuristic gradient */
+.reveal .vibe {
+  background: linear-gradient(
+    100deg,
+    #7cc4ff 0%,
+    #a78bfa 25%,
+    #f472b6 50%,
+    #a78bfa 75%,
+    #7cc4ff 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 0.3em rgba(167, 139, 250, 0.3));
+  animation: vibe-shift 5s linear infinite;
+}
+@keyframes vibe-shift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 300% 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal .vibe {
+    animation: none;
+  }
+}
+
+/* Reduced motion: show typed lines completely, no typing or blinking */
+@media (prefers-reduced-motion: reduce) {
+  .typing,
+  .typing.visible {
+    width: calc(var(--chars) * 1ch);
+    animation: none !important;
+    border-right-width: 0;
+  }
+}
+
+/* QR code to the bingo, shown on the title slide */
+.reveal .qr-note {
+  position: absolute;
+  top: calc(100% + 0.8em);
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2em;
+}
+.reveal .qr-note .qr-card {
+  flex: none;
+  width: 220px;
+  height: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--fg);
+}
+.reveal .qr-note .qr-card svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.reveal .slides section div.qr-note > p {
+  margin: 0;
+  font-size: 0.55em;
+  line-height: 1.5;
+  text-align: left;
+  color: var(--fg-muted);
+}
+.reveal .qr-note p strong {
+  color: var(--fg);
+}
+.reveal .qr-note .qr-url {
+  color: var(--accent);
+}
+
+/* ?export mode: clean screenshots for the PDF */
+.export .reveal .controls,
+.export .reveal .slide-number {
+  display: none !important;
+}
+
+/* last slide: all bingo words, so anyone can finish a row */
+.reveal .buzz-caption {
+  margin: 0 0 0.9em;
+  font-size: 0.8em;
+  color: var(--accent);
+}
+.reveal .buzzwords {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35em 1em;
+  font-size: 0.62em;
+  line-height: 1.3;
+}

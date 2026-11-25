@@ -1,0 +1,34 @@
+<section>
+  <h1 class="r-fit-text">Demo</h1>
+  <aside class="notes">
+    Live: bingo leaderboard (bingo/, change leaderboard-v2). Start at /opsx:apply with a pre-generated change folder.
+    Clear the agent's context first. Press B to blank the slides while in the terminal.
+    Dry run: the full change took 7.5 minutes uninterrupted. The agent stops after sensitive tasks because of the
+    global CLAUDE.md checkpoints: put "do not stop" in the prompt. rules.apply in bingo/openspec/config.yaml must be a YAML list
+    (now rules: apply: guidance: [...]), a plain string is ignored. Test that the rules reach the agent with the installed
+    OpenSpec version.
+    Use the build time: audience opens the bingo on their phones; walk through proposal, design, a spec delta.
+  </aside>
+</section>
+<section>
+  <p class="r-fit-text">Add a live leaderboard to the bingo.</p>
+  <aside class="notes">
+    The task in one sentence. Everyone can follow the scenarios (ranking, ties, pizza does not count).
+  </aside>
+</section>
+<section>
+  <p class="r-fit-text">
+    Watch for the spec first.<br />
+    <span class="fragment">Then for the tests that prove it.</span>
+  </p>
+  <aside class="notes">
+    What the room should look at while the agent builds (several minutes): the agent reads the spec before it writes
+    code, and the tests check the scenarios. Narrate while it runs.
+  </aside>
+</section>
+<section data-visibility="hidden">
+  <p class="r-fit-text">Backup: the finished v2</p>
+  <aside class="notes">
+    Fallback if the live build goes wrong: branch fallback/v2-leaderboard (also pushed to origin).
+  </aside>
+</section>
