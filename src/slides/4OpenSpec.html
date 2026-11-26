@@ -33,30 +33,62 @@
   </aside>
 </section>
 <section>
-  <p class="r-fit-text">
-    Explore <span class="fragment">&rarr; Propose</span>
-    <span class="fragment">&rarr; Apply</span>
-    <span class="fragment">&rarr; Archive</span>
-  </p>
+  <div class="loop">
+    <div class="step fragment">
+      <span class="step-name">Explore</span>
+      <span class="step-cap">think it through</span>
+    </div>
+    <div class="step hot fragment">
+      <span class="step-name">Propose</span>
+      <span class="step-cap">writes it down</span>
+    </div>
+    <div class="step fragment">
+      <span class="step-name">Apply</span>
+      <span class="step-cap">builds and checks it</span>
+    </div>
+    <div class="step fragment">
+      <span class="step-name">Archive</span>
+      <span class="step-cap">keeps it</span>
+    </div>
+  </div>
   <aside class="notes">
-    The loop is enough, no command list. Verify is optional. Do not explain this again in the demo.
-    A change folder holds proposal.md, specs/ (the deltas), design.md and tasks.md. One intent per change,
-    explore before proposing.
+    The loop is enough, no command list. Verify is optional. One intent per change, explore before proposing.
+    Maps the three properties to the loop: Propose creates the change with the spec deltas (written down). Apply builds
+    against it, with tests as the check (checkable). Archive merges the deltas (ADDED / MODIFIED / REMOVED Requirements)
+    into the living specs in openspec/specs/ (kept). That merge separates OpenSpec from "write a doc first".
   </aside>
 </section>
 <section>
-  <p class="r-fit-text">
-    Propose writes it down.<br />
-    <span class="fragment">Apply checks it.</span><br />
-    <span class="fragment">Archive keeps it.</span>
-  </p>
+  <div class="files">
+    <div class="file fragment">
+      <svg viewBox="0 0 64 80" aria-hidden="true"><path d="M8 4h30l18 18v54H8z"/><path d="M38 4v18h18"/><path class="lines" d="M18 44h28M18 56h28M18 68h18"/></svg>
+      <span class="file-what">Why</span>
+      <span class="file-name">proposal.md</span>
+    </div>
+    <div class="file hot fragment">
+      <svg viewBox="0 0 80 64" aria-hidden="true"><path d="M6 10h22l8 8h38v38H6z"/><path class="lines" d="M6 26h68"/></svg>
+      <span class="file-what">What</span>
+      <span class="file-name">specs/</span>
+    </div>
+    <div class="file fragment">
+      <svg viewBox="0 0 64 80" aria-hidden="true"><path d="M8 4h30l18 18v54H8z"/><path d="M38 4v18h18"/><path class="lines" d="M18 44h28M18 56h28M18 68h18"/></svg>
+      <span class="file-what">How</span>
+      <span class="file-name">design.md</span>
+    </div>
+    <div class="file fragment">
+      <svg viewBox="0 0 64 80" aria-hidden="true"><path d="M8 4h30l18 18v54H8z"/><path d="M38 4v18h18"/><path class="lines" d="M18 44h28M18 56h28M18 68h18"/></svg>
+      <span class="file-what">Steps</span>
+      <span class="file-name">tasks.md</span>
+    </div>
+  </div>
   <aside class="notes">
-    Maps the three properties to the loop. Propose creates the change with the spec deltas. Apply builds against it,
-    with tests as the check. Archive merges the deltas (ADDED / MODIFIED / REMOVED Requirements) into the living
-    specs in openspec/specs/. That merge separates OpenSpec from "write a doc first".
+    What propose writes: the four artifacts of a change folder, in the order they are opened in the demo.
+    What and How are separate files on purpose: the spec says what, not how. specs/ is highlighted: it is the
+    next slide. This is the legend for the file walkthrough in the demo, so do not explain the files again there.
   </aside>
 </section>
 <section>
+  <p class="slide-caption">specs/ is the <em>what</em></p>
   <pre><code class="language-markdown" data-trim data-noescape>
 ## ADDED Requirements
 

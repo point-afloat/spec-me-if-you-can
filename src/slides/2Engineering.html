@@ -1,12 +1,7 @@
 <section>
-  <h1 class="r-fit-text build">
-    Make it
-    <span class="so">so<span class="line fragment" data-fragment-index="1"></span></span>
-    <span class="engineering fragment" data-fragment-index="1">Engineering</span>
-  </h1>
+  <p class="r-fit-text vibe" style="font-weight: var(--weight-heading)">At least it's fast, right?</p>
   <aside class="notes">
-    "Make it so": Captain Picard gives an order and expects it done. That is vibe coding.
-    Strike out "so", and what is left is engineering.
+    The usual defence of vibe coding after the three problems: "but it is fast". The next slides test that claim.
   </aside>
 </section>
 <section>
@@ -26,6 +21,16 @@
     He says it against the idea of specs-to-code, that code is cheap. He returns to it as his closing message at 16:27.
     Wording is from the auto-generated transcript: check it against the video before the talk.
     https://www.youtube.com/watch?v=v4F1gFy-hqg
+    HOW TO EXPLAIN IT (about 30 seconds):
+    - "Faster to write" is not "cheaper to own". Code has to be read, changed, debugged and kept alive for years;
+      that is where most of the cost is, not in typing it.
+    - Bad code is expensive because every later change has to work around it, and the cost compounds.
+    - AI makes bad code faster to produce too, so you can now create the expensive kind quicker than ever.
+      That is why "the most expensive it's ever been": the supply of bad code has never been cheaper.
+    - Context: Pocock says it against the idea that code is cheap, so you can regenerate it from a spec and never look.
+      Do not claim he is against specs: he is against specs-to-code with nobody owning the design.
+    - Bridge to the next slides: so how much does AI really speed up the whole job? That is Amdahl.
+    Check the exact wording against the video before the talk.
   </aside>
 </section>
 <section>
@@ -51,7 +56,7 @@
     </label>
     <label>
       <span>\( s \) = <span data-amdahl="s">10</span></span>
-      <input id="amdahl-s" type="range" min="0" max="3" step="0.05" value="1" />
+      <input id="amdahl-s" type="range" min="1" max="3" step="1" value="1" />
       <span class="hint">how many times faster</span>
     </label>
   </div>
@@ -75,5 +80,16 @@
     Say the Amdahl takeaway in words: the part that got faster is small next to the rest.
     The parts that stay slow are deciding what to build and checking that it works.
     This returns at the end: your role moves to the bottleneck.
+  </aside>
+</section>
+<section>
+  <h1 class="r-fit-text build">
+    Make it
+    <span class="so">so<span class="line fragment" data-fragment-index="1"></span></span>
+    <span class="engineering fragment" data-fragment-index="1">Engineering</span>
+  </h1>
+  <aside class="notes">
+    "Make it so": Captain Picard gives an order and expects it done. That is vibe coding.
+    Strike out "so", and what is left is engineering.
   </aside>
 </section>

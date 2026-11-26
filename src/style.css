@@ -399,3 +399,97 @@
   font-size: 0.62em;
   line-height: 1.3;
 }
+
+/* OpenSpec loop: four steps, captions appear on click */
+.reveal .loop {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2.2em;
+}
+.reveal .loop .step {
+  flex: 1;
+  text-align: center;
+}
+.reveal .loop .step-name {
+  display: block;
+  font-size: 1.25em;
+  font-weight: var(--weight-heading);
+  color: var(--fg);
+}
+.reveal .loop .step-cap {
+  display: block;
+  margin-top: 0.4em;
+  font-size: 0.6em;
+  color: var(--fg-muted);
+}
+.reveal .loop .step {
+  position: relative;
+}
+.reveal .loop .step:not(:first-child)::before {
+  content: "\2192";
+  position: absolute;
+  top: 0;
+  left: -0.35em;
+  transform: translateX(-100%);
+  font-size: 1.25em;
+  color: var(--fg-muted);
+}
+.reveal .loop .step.hot .step-name {
+  color: var(--accent);
+}
+
+/* OpenSpec artifacts: one file icon per artifact that propose writes */
+.reveal .files {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 2.2em;
+}
+.reveal .files .file {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 5.5em;
+}
+.reveal .files .file svg {
+  width: 3.2em;
+  height: 4em;
+  fill: none;
+  stroke: var(--fg-muted);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.reveal .files .file svg .lines {
+  stroke-width: 2.5;
+  opacity: 0.55;
+}
+.reveal .files .file.hot svg {
+  stroke: var(--accent);
+}
+.reveal .files .file-what {
+  margin-top: 0.5em;
+  font-size: 1.1em;
+  font-weight: var(--weight-heading);
+}
+.reveal .files .file.hot .file-what {
+  color: var(--accent);
+}
+.reveal .files .file-name {
+  margin-top: 0.2em;
+  font-family: var(--font-mono);
+  font-size: 0.5em;
+  color: var(--fg-muted);
+}
+
+/* small caption above a code block */
+.reveal .slide-caption {
+  margin: 0 0 0.6em;
+  font-size: 0.7em;
+  color: var(--accent);
+}
+.reveal .slide-caption em {
+  font-style: normal;
+  font-weight: var(--weight-heading);
+}

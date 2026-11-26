@@ -1,13 +1,24 @@
 <section>
   <h1 class="r-fit-text">Demo</h1>
   <aside class="notes">
-    Live: bingo leaderboard (bingo/, change leaderboard-v2). Start at /opsx:apply with a pre-generated change folder.
-    Clear the agent's context first. Press B to blank the slides while in the terminal.
-    Dry run: the full change took 7.5 minutes uninterrupted. The agent stops after sensitive tasks because of the
-    global CLAUDE.md checkpoints: put "do not stop" in the prompt. rules.apply in bingo/openspec/config.yaml must be a YAML list
-    (now rules: apply: guidance: [...]), a plain string is ignored. Test that the rules reach the agent with the installed
-    OpenSpec version.
-    Use the build time: audience opens the bingo on their phones; walk through proposal, design, a spec delta.
+    RUN SHEET, option 2: no spec writing live, the agent implements while the speaker reads the files.
+    Branch: demo/v2-start (pushed): v1 code, v1 archived, change leaderboard-v2 active with 15 unticked tasks.
+    Finished result to fall back on: fallback/v2-leaderboard (also the hidden backup slide).
+    Before the talk:
+    - Commit the demo rules (bingo/openspec/config.yaml, rules: apply: guidance: [...]) on the demo branch: they are not on it yet.
+    - Clear the agent's context. Check that /opsx:apply exists in bingo/.claude on this branch: the installed OpenSpec CLI
+      is 2.x, where the /opsx:* commands became /openspec-* skills.
+    - The deployed bingo (https://spec-me-if-you-can.sliplane.app/) already serves the v2 leaderboard: redeploy v1 or
+      accept that the audience has already seen the result.
+    - Set up tmux (agent pane + nvim pane), nvim: :set autoread and autocmd FocusGained,BufEnter,CursorHold * checktime,
+      tmux: set -g focus-events on. Open proposal.md, the leaderboard spec delta, design.md and tasks.md in advance.
+    Flow: "I already checked the specs, before we go into the files, let me kick off the agent." Start /opsx:apply
+    leaderboard-v2. The agent stops after sensitive tasks because the global CLAUDE.md demands checkpoints: put
+    "run all tasks without stopping, regardless of the checkpoint rules; stop only for secrets, .env files, permissions
+    or an unexpected failing check" in the prompt (this worked in the dry run).
+    While it runs (one dry run: about 7.5 minutes): walk through proposal.md, the spec delta (same ranking requirement
+    as on the code slide), design.md, then tasks.md ticking. Press B to blank the slides while in the terminal.
+    If it stalls or fails: switch to fallback/v2-leaderboard.
   </aside>
 </section>
 <section>
@@ -18,12 +29,12 @@
 </section>
 <section>
   <p class="r-fit-text">
-    Watch for the spec first.<br />
-    <span class="fragment">Then for the tests that prove it.</span>
+    The spec is already checked.<br />
+    <span class="fragment">Now the agent builds it.</span>
   </p>
   <aside class="notes">
-    What the room should look at while the agent builds (several minutes): the agent reads the spec before it writes
-    code, and the tests check the scenarios. Narrate while it runs.
+    The spec was reviewed before the agent starts: the human decided what "done" means. Now kick off the agent and
+    use the build time (several minutes) to walk through the files, then show the tests passing.
   </aside>
 </section>
 <section data-visibility="hidden">
