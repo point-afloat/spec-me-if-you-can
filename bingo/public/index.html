@@ -44,6 +44,12 @@
         <div id="grid" class="grid" aria-label="Bingo card"></div>
         <p id="error" class="error mono" role="alert" hidden></p>
 
+        <section id="leaderboard" class="board" aria-labelledby="board-title">
+          <h2 id="board-title" class="boardhead mono">&#9508; leaderboard.log &#9500;</h2>
+          <ol id="board-list" class="mono"></ol>
+          <p id="board-foot" class="boardfoot mono"></p>
+        </section>
+
         <div class="statusline mono" aria-hidden="true">
           <span class="mode">NORMAL</span>
           <span class="branch">main</span>
@@ -54,6 +60,9 @@
       </div>
     </main>
     <script type="module" src="/stars.js"></script>
+    <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+    <div id="unicorn" class="unicorn" aria-hidden="true" hidden><span>&#129412;</span></div>
     <script type="module" src="/app.js"></script>
+    <script type="module" src="/leaderboard.js"></script>
   </body>
 </html>

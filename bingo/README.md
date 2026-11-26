@@ -69,3 +69,11 @@ Pushing to the configured branch redeploys the app. In the Sliplane admin panel:
 - `GET /healthz` health check
 - `GET /api/ping-stream` server-sent-events test stream (an event every 5 s, a heartbeat every 15 s), used to check that the hosting proxy passes long-lived streams:
   `curl -N http://localhost:3000/api/ping-stream`
+- `GET /api/standings` JSON snapshot of the leaderboard: `{"top": [...10 rows], "you": {...} | null, "total": n}`. With a valid cookie it also registers the player silently and returns their own entry in `you`:
+  `curl http://localhost:3000/api/standings`
+- `GET /api/events` server-sent events for the leaderboard: an `event: standings` snapshot on connect and on every change (at most one per 150 ms, plus a full snapshot every 10 s), an `event: bingo` (`{id, name, place}`) the moment a player gets their first bingo, and a `: ping` heartbeat every 15 s. At most 2000 connections, then 503:
+  `curl -N http://localhost:3000/api/events`
+
+### Leaderboard and restarts
+
+Standings live in memory only. After a restart or redeploy they are empty and refill silently as open pages reconnect with their cookie (scores and bingo badges return); reconnecting never announces a bingo, but the placement numbers ("#3") start over. Scores always come from the signed cookie, never from the client.
