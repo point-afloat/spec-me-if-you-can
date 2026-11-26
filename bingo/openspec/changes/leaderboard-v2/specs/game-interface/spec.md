@@ -23,3 +23,14 @@ The page SHALL show bingo announcements as a status message that takes no keyboa
 #### Scenario: Reduced motion
 - **WHEN** a visitor with reduced motion enabled receives an announcement
 - **THEN** the message appears and disappears without animation
+
+### Requirement: Unicorn does not get in the way
+The unicorn animation SHALL NOT take keyboard focus, SHALL NOT intercept clicks or taps, and SHALL NOT cover any card cell on a viewport of 390 by 700 pixels.
+
+#### Scenario: Tapping while the unicorn dances
+- **WHEN** the unicorn is dancing and the viewer taps a card cell
+- **THEN** the cell is ticked as usual
+
+#### Scenario: Card stays visible
+- **WHEN** the unicorn is dancing on a 390 by 700 pixel viewport
+- **THEN** all 25 cells remain fully visible

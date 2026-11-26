@@ -1,14 +1,16 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import { CELLS, CENTER, hasBingo, isMarked, isValidCell, toggle, wordIdAt } from "./card.ts";
+import { CELLS, CENTER, hasBingo, isMarked, isValidCell, markedWordCount, toggle, wordIdAt } from "./card.ts";
 import { newPlayerState, sign, verify, type PlayerState } from "./cookie.ts";
+import { Leaderboard, publicId } from "./leaderboard.ts";
 import { displayName, validateNickname } from "./nickname.ts";
 import { WORDS } from "./words.ts";
 
 const COOKIE_NAME = "bingo";
 const COOKIE_MAX_AGE_SECONDS = 14 * 24 * 60 * 60; // 14 days, spec requires at least 7
 const MAX_BODY_BYTES = 1024;
+const MAX_STREAMS = 2000;
 
 export interface AppOptions {
   /** HMAC secret for the player cookie. Must stay the same across redeployments. */
@@ -18,11 +20,15 @@ export interface AppOptions {
   /** Interval of the SSE test stream events (default 5 s) and heartbeats (default 15 s). */
   pingIntervalMs?: number;
   heartbeatIntervalMs?: number;
+  /** Standings stream: coalescing window for pushes (default 150 ms), full snapshot interval (default 10 s). */
+  coalesceMs?: number;
+  snapshotIntervalMs?: number;
 }
 
 const STATIC_FILES: Record<string, { file: string; type: string }> = {
   "/": { file: "index.html", type: "text/html; charset=utf-8" },
   "/app.js": { file: "app.js", type: "text/javascript; charset=utf-8" },
+  "/leaderboard.js": { file: "leaderboard.js", type: "text/javascript; charset=utf-8" },
   "/stars.js": { file: "stars.js", type: "text/javascript; charset=utf-8" },
   "/boot.js": { file: "boot.js", type: "text/javascript; charset=utf-8" },
   "/style.css": { file: "style.css", type: "text/css; charset=utf-8" },
@@ -107,6 +113,60 @@ export function createApp(options: AppOptions): http.Server {
   const secure = options.secureCookies ?? true;
   const pingMs = options.pingIntervalMs ?? 5000;
   const heartbeatMs = options.heartbeatIntervalMs ?? 15000;
+  const coalesceMs = options.coalesceMs ?? 150;
+  const snapshotMs = options.snapshotIntervalMs ?? 10000;
+  const board = new Leaderboard();
+
+  interface Stream {
+    res: http.ServerResponse;
+    viewerId: string | null;
+  }
+  const streams = new Set<Stream>();
+  let pushTimer: NodeJS.Timeout | null = null;
+
+  /** Register (or refresh) a player from verified cookie state. Returns their public id. */
+  function register(state: PlayerState, hadBingo: boolean = state.announced): string {
+    const id = publicId(secret, state.playerId);
+    if (board.register(id, displayName(state.nickname, state.playerId), markedWordCount(state.mask), hadBingo)) {
+      schedulePush();
+    }
+    return id;
+  }
+
+  function sendEvent(stream: Stream, event: string, data: unknown): void {
+    stream.res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  }
+
+  function pushStandings(): void {
+    const ranking = board.ranking();
+    for (const stream of streams) sendEvent(stream, "standings", board.snapshot(stream.viewerId, ranking));
+  }
+
+  /** Coalesce bursts of changes into at most one push per window. */
+  function schedulePush(): void {
+    if (pushTimer || streams.size === 0) return;
+    pushTimer = setTimeout(() => {
+      pushTimer = null;
+      pushStandings();
+    }, coalesceMs);
+    pushTimer.unref();
+  }
+
+  function announceBingo(id: string, place: number): void {
+    const name = board.nameOf(id) ?? "";
+    for (const stream of streams) sendEvent(stream, "bingo", { id, name, place });
+    schedulePush();
+  }
+
+  // Application-level keep-alive: a full snapshot every few seconds lets pages detect a stalled stream.
+  const keepAlive = setInterval(() => {
+    if (streams.size > 0) pushStandings();
+  }, snapshotMs);
+  const heartbeat = setInterval(() => {
+    for (const stream of streams) stream.res.write(": ping\n\n");
+  }, heartbeatMs);
+  keepAlive.unref();
+  heartbeat.unref();
 
   function cookieHeader(state: PlayerState): string {
     const attrs = [
@@ -138,6 +198,30 @@ export function createApp(options: AppOptions): http.Server {
 
   function currentPlayer(req: http.IncomingMessage): PlayerState | null {
     return verify(parseCookies(req.headers.cookie)[COOKIE_NAME], secret);
+  }
+
+  function handleStandings(req: http.IncomingMessage, res: http.ServerResponse): void {
+    const state = currentPlayer(req);
+    const viewerId = state ? register(state) : null;
+    sendJson(res, 200, board.snapshot(viewerId));
+  }
+
+  function handleEvents(req: http.IncomingMessage, res: http.ServerResponse): void {
+    if (streams.size >= MAX_STREAMS) throw new HttpError(503, "too many connections");
+    const state = currentPlayer(req);
+    const viewerId = state ? register(state) : null;
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+      ...SECURITY_HEADERS,
+    });
+    res.write("retry: 3000\n\n");
+    const stream: Stream = { res, viewerId };
+    streams.add(stream);
+    sendEvent(stream, "standings", board.snapshot(viewerId));
+    req.on("close", () => streams.delete(stream));
   }
 
   function handlePingStream(req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -179,6 +263,16 @@ export function createApp(options: AppOptions): http.Server {
         res.end("ok");
         return;
 
+      case "/api/standings":
+        if (method !== "GET") throw new HttpError(405, "method not allowed");
+        handleStandings(req, res);
+        return;
+
+      case "/api/events":
+        if (method !== "GET") throw new HttpError(405, "method not allowed");
+        handleEvents(req, res);
+        return;
+
       case "/api/ping-stream":
         if (method !== "GET") throw new HttpError(405, "method not allowed");
         handlePingStream(req, res);
@@ -201,9 +295,14 @@ export function createApp(options: AppOptions): http.Server {
         if (!isValidCell(cell)) throw new HttpError(400, "cell must be an integer from 0 to 24");
         const mask = toggle(state.mask, cell);
         const bingo = hasBingo(mask);
-        const newBingo = bingo && !state.announced;
         const next: PlayerState = { ...state, mask, announced: state.announced || bingo };
-        return sendJson(res, 200, { ...view(next), newBingo }, next);
+        // Register with the cookie's flag from before this click, so the store can still hand out the placement.
+        const id = register(next, state.announced);
+        // Announce only when the cookie and the store both say it is the first time:
+        // the store closes the replay of an older cookie copy within a server run.
+        const place = bingo && !state.announced ? board.recordBingo(id) : null;
+        if (place !== null) announceBingo(id, place);
+        return sendJson(res, 200, { ...view(next), newBingo: place !== null }, next);
       }
 
       case "/api/nickname": {
@@ -216,6 +315,7 @@ export function createApp(options: AppOptions): http.Server {
           throw new HttpError(400, "nickname must be 1-20 characters without control characters");
         }
         const next: PlayerState = { ...state, nickname };
+        register(next);
         return sendJson(res, 200, view(next), next);
       }
     }
@@ -223,7 +323,7 @@ export function createApp(options: AppOptions): http.Server {
     throw new HttpError(404, "not found");
   }
 
-  return http.createServer((req, res) => {
+  const server = http.createServer((req, res) => {
     route(req, res).catch((err: unknown) => {
       if (res.headersSent) {
         res.destroy();
@@ -234,6 +334,12 @@ export function createApp(options: AppOptions): http.Server {
       sendJson(res, status, { error: err instanceof HttpError ? err.message : "internal error" });
     });
   });
+  server.on("close", () => {
+    clearInterval(keepAlive);
+    clearInterval(heartbeat);
+    if (pushTimer) clearTimeout(pushTimer);
+  });
+  return server;
 }
 
 function main(): void {

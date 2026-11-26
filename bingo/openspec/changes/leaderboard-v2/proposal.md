@@ -11,6 +11,7 @@ v1 is a solo game: every player ticks buzzwords on their own card with no sense 
 - Ticking a word and changing a nickname update the standings on the server. The score always comes from the verified, signed cookie, never from the client.
 - Every player's first bingo is announced on all connected devices with a short-lived message and a placement ("#3"), once per player. The winner sees a message addressed to them.
 - After a redeploy the in-memory standings are empty and rebuild silently as players' pages reconnect with their existing cookie; reconnecting never triggers an announcement.
+- A dancing unicorn appears on every connected page, the winner's included, with each announced first bingo (about 6 s, one at a time, no dance under reduced motion). It is a second rendering of the same bingo event, with no server change.
 - The page gets a leaderboard pane below the card (the card stays fully visible without scrolling) and a bingo toast.
 - No change to the cookie format: it already carries the player id, nickname and the "first bingo announced" flag.
 

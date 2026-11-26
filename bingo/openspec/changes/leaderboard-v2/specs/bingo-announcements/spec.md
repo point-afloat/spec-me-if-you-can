@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Celebrates bingos in front of the whole room: when a player first completes a line, every connected player sees who did it and in which place, once per player and never as an echo of a reconnect.
+Celebrates bingos in front of the whole room: when a player first completes a line, every connected player sees who did it and in which place, once per player and never as an echo of a reconnect. A dancing unicorn accompanies every announcement on every connected page.
 
 ## ADDED Requirements
 
@@ -80,3 +80,24 @@ The system SHALL NOT replay earlier announcements to pages that connect later.
 #### Scenario: Page connects after a bingo
 - **WHEN** a page connects after another player's bingo was announced
 - **THEN** it shows no message, and the player appears in the standings with the "AGI ACHIEVED" mark
+
+### Requirement: Unicorn dance
+The page SHALL show a dancing unicorn on every connected page, including the winner's, whenever a first bingo is announced, and SHALL remove it by itself after about 6 seconds.
+
+#### Scenario: Bingo in the room
+- **GIVEN** two connected pages
+- **WHEN** a player's first bingo is announced
+- **THEN** both pages show a dancing unicorn, and it disappears after about 6 seconds without interaction
+
+#### Scenario: Bingo during a dance
+- **GIVEN** a unicorn is already dancing
+- **WHEN** another first bingo is announced
+- **THEN** only one unicorn is shown and its dance starts over
+
+#### Scenario: Reduced motion
+- **WHEN** a visitor with reduced motion enabled receives an announcement
+- **THEN** the unicorn does not dance and the message is still shown
+
+#### Scenario: No replay
+- **WHEN** a page connects or reconnects after a bingo was announced
+- **THEN** no unicorn is shown

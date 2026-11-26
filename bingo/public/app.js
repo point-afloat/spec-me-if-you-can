@@ -72,6 +72,8 @@ async function load() {
   if (!response.ok) return showError("Could not load your card.");
   showError("");
   render(body);
+  // Tells leaderboard.js that the cookie is in place, so its stream knows who is watching.
+  document.dispatchEvent(new CustomEvent("bingo:card"));
 }
 
 async function mark(cell) {

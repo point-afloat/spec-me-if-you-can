@@ -38,6 +38,8 @@ v1 is deployed on Sliplane as one stateless container; all player state lives in
 
 **10. Rollout.** Branch `fallback/v2-leaderboard` holds the finished v2. For the live demo, the same change is built on `main`; if it goes wrong, switch the Sliplane deploy branch to the fallback branch. Rolling back to v1 means deploying the `v1` tag. The cookie format is unchanged, so players keep their cards in every direction.
 
+**11. Unicorn.** The `bingo` event handler in `public/leaderboard.js` also triggers a dancing unicorn: the emoji 🦄 animated with CSS (hop, wobble, spin), no assets, no new dependencies. It lives in a fixed, `pointer-events: none`, `aria-hidden` container that never takes focus and covers no card cell on 390 by 700 (it dances along the bottom edge, over the toast area). Only one unicorn exists at a time; a new bingo restarts the animation. It removes itself after about 6 s. Under reduced motion it is not shown and the toast carries the announcement. It reacts only to live `bingo` events, so reconnects and late joiners see nothing, as for toasts.
+
 ## Risks / Trade-offs
 
 - [Proxy buffers or cuts the stream on some networks] → 10 s application-level snapshots plus a 25 s stall watchdog and a 3 s polling fallback.
