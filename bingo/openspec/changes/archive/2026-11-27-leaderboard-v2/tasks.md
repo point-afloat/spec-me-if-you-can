@@ -26,7 +26,7 @@
 ## 4. Wrap-up
 
 - [x] 4.1 Run the full flow with two browsers against a local server (both listed, ticks update live, a first bingo is announced once to both, a server restart rebuilds the standings silently) and report the result
-- [ ] 4.2 Run `npm test`, `npm run typecheck` and `openspec validate leaderboard-v2 --strict` and verify all pass
+- [x] 4.2 Run `npm test`, `npm run typecheck` and `openspec validate leaderboard-v2 --strict` and verify all pass
 
 ## Workflow follow-up
 
